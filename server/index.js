@@ -1,15 +1,21 @@
 let express = require('express');
 let app = express();
+let morgan = require('morgan');
 let bodyParser = require('body-parser');
 
+app.use(morgan('combined'));
+
+app.use(bodyParser.urlencoded({
+  extended: true
+})); //Now getting this message. body-parser deprecated undefined extended: provide extended option server/index.js:6:20. (Revise this?)
 app.use(bodyParser.json());
 
 
-app.get('/', function(req, res) {
-  res.send('Hello World!');
-});
+app.use(express.static('client'));
 
 app.post('/signup', function (req, res) {
+  console.log('a post request happened');
+  console.log('req body is: ', req.body);
   res.send('you hit the post request');
 });
 
