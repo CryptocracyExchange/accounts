@@ -15,34 +15,22 @@ bcrypt.hash(body.password, 10).then(function(results) {
   console.log('body username is: ', body.username);
   const checkThisRecordName = 'user/' + body.username;
   console.log('checkThisRecordName is: ', checkThisRecordName);
-  /*client.record.has(checkThisRecordName, function() {
-    console.log('is this hit for some reason?');
-    return res.status(403).send('Invalid Credentials');
-  });*/ //this ran too late. so the record would be created before this ran
-  console.log('runs before is this hit for some reason?')
-  // client.record.has() https://deepstream.io/docs/client-js/datasync-client-record/
-  //create record here
-  const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
-    user.set('username', body.username);
-    user.set('password', body.password);
-    user.set('email', body.email);
-    /*user.set({
-      username: body.username,
-      password: body.password,
-      email: body.email
-      }, function (err) {
-        if (err) {
-          console.log('error is: ', err);
-        } else {
-          console.log('record set without error');
-          console.log('user data is: ', user._$data);
-        }
-      })*/
-    })
-  //run function when record is created to save the record to the mongo database
-  //look at http authentication page again 
-  //send status code
-  return res.status(200).send('200 Ok!');
+  client.record.has(checkThisRecordName, function(error, hasRecord) {
+    if (error) {
+      console.log('is this hit for some reason?');
+      return res.status(403).send('Invalid Credentials');
+    } else if (hasRecord) {
+      console.log('the record already exists!')
+      return res.status(403).send('User already exists');
+    } else {
+      const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
+        user.set('username', body.username);
+        user.set('password', body.password);
+        user.set('email', body.email);
+        return res.status(200).send('200 Ok!');
+      })
+    }
+  })
 }).catch(function(err) {
   console.log('Promise rejected. Error is: ', err);
 });
