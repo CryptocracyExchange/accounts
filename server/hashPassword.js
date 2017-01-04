@@ -20,9 +20,13 @@ bcrypt.hash(body.password, 10).then(function(results) {
     return res.status(403).send('Invalid Credentials');
   });*/ //this ran too late. so the record would be created before this ran
   console.log('runs before is this hit for some reason?')
+  // client.record.has() https://deepstream.io/docs/client-js/datasync-client-record/
   //create record here
   const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
-    user.set({
+    user.set('username', body.username);
+    user.set('password', body.password);
+    user.set('email', body.email);
+    /*user.set({
       username: body.username,
       password: body.password,
       email: body.email
@@ -33,7 +37,7 @@ bcrypt.hash(body.password, 10).then(function(results) {
           console.log('record set without error');
           console.log('user data is: ', user._$data);
         }
-      })
+      })*/
     })
   //run function when record is created to save the record to the mongo database
   //look at http authentication page again 
