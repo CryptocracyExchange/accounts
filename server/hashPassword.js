@@ -1,8 +1,6 @@
 const deepstream = require('deepstream.io-client-js');
 const client = deepstream('localhost:6020').login();
-const MongoDBStorageConnector = require( 'deepstream.io-storage-mongodb' );
 const bcrypt = require('bcrypt');
-
 
 const hashPassword = function(body, res) {
 console.log('hits hashPassword function');
