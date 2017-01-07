@@ -150,7 +150,7 @@ const hashPasswordSignUp = function(body, res) {
             let emailTaken = list.getEntries();
             if (emailTaken.length !== 0) {
               console.log('the email has been taken')
-              return res.status(403).send();
+              return res.status(403).send('the email has been taken');
             } else {
                 const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
                   user.set('username', body.username);
