@@ -20,8 +20,10 @@ const bcrypt = require('bcrypt');
 console.log('will this run when the server starts up?');
 
 function checkForValidLogin(user, res) {
+  let recordToSearchFor = 'user/' + user.username
+  console.log('are headers sent?', res.headersSent);
   res.set({
-    userId: 'users/' + user.username,
+    userId: recordToSearchFor,
     username: user.username
   })
   console.log('are headers sent?', res.headersSent)
@@ -30,6 +32,39 @@ function checkForValidLogin(user, res) {
   console.log('hits hashPasswordLogIn function');
   console.log('user.password is: ', user.password);
   //find if someone has the username in the database
+  /*
+  let allUsersList = client.record.getList('allUsersList').whenReady(function(list){
+    let queryResultsArr = list.getEntries();
+  }*/
+  console.log('recordToSearchFor is: ', recordToSearchFor);
+    client.record.has(recordToSearchFor, function(error, hasRecord){
+      console.log('hasRecord is: ', hasRecord);
+      if (error) {
+        return res.status(403).send();
+      } else if (!hasRecord) {
+        return res.status(403).send();
+      } else {
+        client.record.getRecord(recordToSearchFor).whenReady(function(record){
+          client.record.snapshot(record.name, function(error, data) {
+            bcrypt.compare(user.password, data.password).then(function(results){
+              if (results) {
+                console.log('password is correct');
+                // console.log('res is: ', res);
+                console.log('does this log');
+                res.status(200).send();
+              } else {
+                console.log('password is incorrect');
+                res.status(403).send();
+              }
+            }).catch(function(err){
+            console.log('Password is incorrect.', err);
+            return res.status(403).send();
+            })
+          })
+        })
+    }
+  })
+/*
   let findUser = JSON.stringify({
     table: 'user',
     query: [
@@ -69,6 +104,7 @@ function checkForValidLogin(user, res) {
     })
   })
 })
+  */
 }
 
 module.exports = checkForValidLogin;
@@ -83,6 +119,7 @@ const hashPasswordSignUp = function(body, res) {
       if (error) {
         return res.status(403).send('Invalid Credentials');
       } else if (hasRecord) {
+        console.log('user already exists!');
         return res.status(403).send('User already exists');
       } else {
         let allUsersList = client.record.getList('allUsersList').whenReady(function(list){
@@ -112,16 +149,18 @@ const hashPasswordSignUp = function(body, res) {
           queryResults.whenReady(function(list) {
             let emailTaken = list.getEntries();
             if (emailTaken.length !== 0) {
-              return res.status(403).send('the email has already been used');
+              console.log('the email has been taken')
+              return res.status(403).send();
+            } else {
+                const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
+                  user.set('username', body.username);
+                  user.set('password', body.password);
+                  user.set('email', body.email);
+                  list.addEntry(checkThisRecordName);
+                  console.log('new user has been created and added to the list');
+                  return res.status(200).send();
+            })
             }  
-          })
-          const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
-            user.set('username', body.username);
-            user.set('password', body.password);
-            user.set('email', body.email);
-            list.addEntry(checkThisRecordName);
-            console.log('new user has been created and added to the list');
-            return res.status(200).send('200 Ok!');
           })
       })
 }
