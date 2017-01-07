@@ -1,7 +1,9 @@
 FROM node:7.4-alpine
 
+
 WORKDIR /usr/local/accounts
 COPY . /usr/local/accounts
+RUN apk add --no-cache make gcc g++ python zeromq zeromq-dev
 RUN npm install
 
 ENV DEEPSTREAM_AUTH_ROLE=provider \
@@ -10,5 +12,4 @@ ENV DEEPSTREAM_AUTH_ROLE=provider \
 # Define default command.
 CMD [ "npm", "run", "start-prod"]
 
-# Expose API webhook listener port.
 EXPOSE 8999
