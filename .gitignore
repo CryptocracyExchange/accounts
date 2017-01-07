@@ -7,5 +7,7 @@
 node_modules
 jspm_packages
 
+.vscode
+*.log
 
 # End of https://www.gitignore.io/api/node

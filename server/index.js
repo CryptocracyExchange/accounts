@@ -46,6 +46,8 @@ app.post('/signup', function (req, res) {
   // res.send('you hit the post request');
 });
 
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+const port = process.env.NODE_ENV === 'prod' ? 8999 : 3001;
+
+app.listen(port, function () {
+  console.log(`Example app listening on port ${port}!`);
 });
