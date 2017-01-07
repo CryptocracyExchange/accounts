@@ -1,9 +1,11 @@
+let path = require('path');
 let express = require('express');
 let app = express();
 let morgan = require('morgan');
 let bodyParser = require('body-parser');
-let hashPassword = require('./hashPassword.js').hashPassword;
+let signUpOrLogIn = require('./hashPassword.js');
 // console.log('hashPassword is: ', hashPassword);
+console.log('signUpOrLogIn is: ', signUpOrLogIn);
 
 app.use(morgan('combined'));
 
@@ -15,10 +17,32 @@ app.use(bodyParser.json());
 
 app.use(express.static('client'));
 
+app.get('/login', function (req,res) {
+  res.sendFile(path.join(__dirname, '../client/login.html'));
+})
+
+app.post('/login', function (req, res) {
+  console.log('if I see this then a post request was made to login');
+  console.log('req.body is: ', req.body);
+  console.log('req.body.authData.role is: ', req.body.authData.role);
+  if (req.body.authData.role === 'user') {
+    console.log('a user is trying to login');
+    signUpOrLogIn.checkForValidLogin(req.body.authData, res);
+    // return res.status(200).end();
+  } else if (req.body.authData.role === 'provider') {
+    console.log('a provider is trying to login');
+    return res.status(200).end();
+  } else {
+    console.log('invalid request')
+    return res.status(403).end();
+  }
+  return res.status(200).end();
+})
+
 app.post('/signup', function (req, res) {
   console.log('a post request happened');
   console.log('req body is: ', req.body);
-  hashPassword(req.body, res);
+  signUpOrLogIn.hashPasswordSignUp(req.body, res);
   // res.send('you hit the post request');
 });
 

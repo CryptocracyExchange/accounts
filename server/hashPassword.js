@@ -1,9 +1,56 @@
 const deepstream = require('deepstream.io-client-js');
-const client = deepstream('localhost:6020').login();
+const client = deepstream('localhost:6020').login({role: 'provider', username: 'accounts-service', password: '12345'});
 const bcrypt = require('bcrypt');
 
-const hashPassword = function(body, res) {
-console.log('hits hashPassword function');
+console.log('will this run when the server starts up?');
+
+function checkForValidLogin(user, res) {
+  console.log('are headers sent?', res.headersSent)
+  console.log('user.username is: ', user.username);
+  console.log('hits checkforValidLogin. user is: ', user);
+  console.log('hits hashPasswordLogIn function');
+  console.log('user.password is: ', user.password);
+  //find if someone has the username in the database
+  let findUser = JSON.stringify({
+    table: 'user',
+    query: [
+      ['username', 'eq', user.username]
+    ]
+  })
+  console.log('time is: ', Date.now(), 'findUser is: ', findUser);
+  let queryResults = client.record.getList('search?' + findUser)
+  console.log('are headers sent?', res.headersSent)
+  console.log('time is: ', Date.now(), 'queryResults comes before or after findUser is logged: ', queryResults);
+  queryResults.whenReady(function(list) {
+    console.log('are headers sent?', res.headersSent)
+    console.log('time is: ', Date.now(), 'this comes before or after findUser is logged?')
+    let queryResultsArr = list.getEntries();
+    console.log('are headers sent?', res.headersSent)
+    console.log('time is: ', Date.now(), 'queryResultsArr is: ', queryResultsArr);
+    // console.log('findUser is: ', findUser);
+    console.log('what Im putting in for the record name is: ', 'user/' + queryResultsArr[0]);
+    client.record.getRecord('user/' + queryResultsArr[0]).whenReady(function(record){
+      console.log('the record is: ', record);
+      client.record.snapshot(record.name, function(error, data) {
+        console.log('data of snapshot is: ', data);
+        bcrypt.compare(user.password, data.password).then(function(results){
+        console.log('password is correct');
+        // console.log('res is: ', res);
+        console.log('does this log');
+        res.status(200).send({})
+      }).catch(function(err){
+        console.log('Password is incorrect.', err);
+        return res.status(403).end();
+      })
+    })
+  })
+})
+}
+
+module.exports = checkForValidLogin;
+
+const hashPasswordSignUp = function(body, res) {
+console.log('hits hashPasswordSignUp function');
 console.log('body.password is: ', body.password);
 bcrypt.hash(body.password, 10).then(function(results) {
   console.log('results is: ', results);
@@ -16,6 +63,7 @@ bcrypt.hash(body.password, 10).then(function(results) {
   const checkThisRecordName = 'user/' + body.username + '|' + body.email;
   console.log('checkThisRecordName is: ', checkThisRecordName);
   client.record.has(checkThisRecordName, function(error, hasRecord) {
+    console.log('if Im reading this then it hit the function to check record names?')
     if (error) {
       console.log('is this hit for some reason?');
       return res.status(403).send('Invalid Credentials');
@@ -58,4 +106,7 @@ bcrypt.hash(body.password, 10).then(function(results) {
 });
 }
 
-module.exports = {hashPassword: hashPassword};
+module.exports = {
+  hashPasswordSignUp: hashPasswordSignUp,
+  checkForValidLogin: checkForValidLogin
+};
