@@ -71,7 +71,7 @@ const hashPasswordSignUp = function(body, res) {
   console.log('body.password is: ', body.password);
   bcrypt.hash(body.password, 10).then(function(results) {
     body.password = results;
-    const checkThisRecordName = 'user/' + body.username + '|' + body.email;
+    const checkThisRecordName = 'user/' + body.username;
     client.record.has(checkThisRecordName, function(error, hasRecord) {
       if (error) {
         return res.status(403).send('Invalid Credentials');
@@ -88,6 +88,12 @@ const hashPasswordSignUp = function(body, res) {
               return res.status(403).send('the username has already been used');
             }
           }
+          let hackyFindUserToAddSearchQuery = JSON.stringify({
+            table: 'user',
+            query: [
+              ['user', 'eq', body.username]
+            ]
+          })
           // let emailRegExp = new RegExp(body.email + '$', 'gi');
           let findEmail = JSON.stringify({
             table: 'user',
