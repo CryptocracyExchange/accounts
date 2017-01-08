@@ -22,6 +22,7 @@ console.log('will this run when the server starts up?');
 function checkForValidLogin(user, res) {
   let recordToSearchFor = 'user/' + user.username
   console.log('are headers sent?', res.headersSent);
+  console.log('client is: ', client);
   res.set({
     userId: recordToSearchFor,
     username: user.username
@@ -38,6 +39,7 @@ function checkForValidLogin(user, res) {
   }*/
   console.log('recordToSearchFor is: ', recordToSearchFor);
     client.record.has(recordToSearchFor, function(error, hasRecord){
+      console.log('hits has record function');
       // console.log('hasRecord is: ', hasRecord);
       if (error) {
         console.log('there is an error');

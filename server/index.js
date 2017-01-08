@@ -36,7 +36,6 @@ app.post('/login', function (req, res) {
     console.log('invalid request')
     return res.status(403).end();
   }
-  return res.status(200).end();
 })
 
 app.post('/signup', function (req, res) {
