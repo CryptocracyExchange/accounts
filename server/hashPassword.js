@@ -38,7 +38,7 @@ function checkForValidLogin(user, res) {
   }*/
   console.log('recordToSearchFor is: ', recordToSearchFor);
     client.record.has(recordToSearchFor, function(error, hasRecord){
-      console.log('hasRecord is: ', hasRecord);
+      // console.log('hasRecord is: ', hasRecord);
       if (error) {
         return res.status(403).send();
       } else if (!hasRecord) {
@@ -51,10 +51,10 @@ function checkForValidLogin(user, res) {
                 console.log('password is correct');
                 // console.log('res is: ', res);
                 console.log('does this log');
-                res.status(200).send();
+                return res.status(200).send();
               } else {
                 console.log('password is incorrect');
-                res.status(403).send();
+                return res.status(403).send();
               }
             }).catch(function(err){
             console.log('Password is incorrect.', err);

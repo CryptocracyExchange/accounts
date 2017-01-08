@@ -23,7 +23,7 @@ app.get('/login', function (req,res) {
 
 app.post('/login', function (req, res) {
   console.log('if I see this then a post request was made to login');
-  console.log('req.body is: ', req.body);
+  // console.log('req.body is: ', req.body);
   console.log('req.body.authData.role is: ', req.body.authData.role);
   if (req.body.authData.role === 'user') {
     console.log('a user is trying to login');
