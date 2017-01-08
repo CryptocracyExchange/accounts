@@ -41,10 +41,10 @@ function checkForValidLogin(user, res) {
       // console.log('hasRecord is: ', hasRecord);
       if (error) {
         console.log('there is an error');
-        return res.status(403).send();
+        return res.status(403).send('There is an error');
       } else if (!hasRecord) {
         console.log('the user does not exist!');
-        return res.status(403).send();
+        return res.status(403).send('There is an error');
       } else {
         client.record.getRecord(recordToSearchFor).whenReady(function(record){
           client.record.snapshot(record.name, function(error, data) {
@@ -56,11 +56,11 @@ function checkForValidLogin(user, res) {
                 return res.status(200).send();
               } else {
                 console.log('password is incorrect');
-                return res.status(403).send();
+                return res.status(403).send('the password is wrong');
               }
             }).catch(function(err){
-            console.log('Password is incorrect.', err);
-            return res.status(403).send();
+            console.log('Compare function in bcrypt didnt work', err);
+            return res.status(403).send('Compare function in bcrypt didnt work', err);
             })
           })
         })
