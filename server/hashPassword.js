@@ -40,8 +40,10 @@ function checkForValidLogin(user, res) {
     client.record.has(recordToSearchFor, function(error, hasRecord){
       // console.log('hasRecord is: ', hasRecord);
       if (error) {
+        console.log('there is an error');
         return res.status(403).send();
       } else if (!hasRecord) {
+        console.log('the user does not exist!');
         return res.status(403).send();
       } else {
         client.record.getRecord(recordToSearchFor).whenReady(function(record){
