@@ -32,13 +32,13 @@ function checkLogin(results, req, res){
       // console.log('findUserResults is: ', findUserResults);
       findUserResults.whenReady( (findUserResults) => {
         let findUserResultsEntries = findUserResults.getEntries();
-        findUserResults.delete();
         console.log('findUserResultsEntries', findUserResultsEntries);
         //findUserResultsEntries[0]
         client.record.getRecord('user/' + findUserResultsEntries[0]).whenReady(function(record){
           client.record.snapshot(record.name, function(error, data) {
             console.log('data of snapshot is: ', data);
             bcrypt.compare(req.body.authData.password, data.password).then(function(results){
+              findUserResults.delete();
               if (results) {
                 console.log('hits results is truthy')
                 console.log('are headers sent?', res.headersSent)
