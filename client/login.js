@@ -18,6 +18,8 @@ logInButton.onclick = function() {
       role: 'user',
       username: usernameValue,
       password: passwordValue
+    }, function(success, data){
+      console.log('success is: ', success, 'data is: ', data);
     })
 }
 
