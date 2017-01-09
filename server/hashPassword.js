@@ -46,7 +46,8 @@ function checkLogin(results, req, res){
                 res.status(200).send({
                   username: req.body.authData.username,
                   clientData: { 
-                    userId: 'user/' + req.body.authData.username
+                    userID: 'user/' + req.body.authData.username,
+                    username: req.body.authData.username
                   },
                   serverData: { role: 'user' }
                 })
