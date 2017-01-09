@@ -19,6 +19,47 @@ const bcrypt = require('bcrypt');
 
 console.log('will this run when the server starts up?');
 
+function checkLogin(results, req, res){
+    let theUsername = req.body.authData.username
+      const findUser = JSON.stringify({
+        table: 'user',
+        query: [
+          ['username', 'eq', theUsername]
+        ]
+      })
+      // console.log('findUser is: ', findUser);
+      const findUserResults = client.record.getList('search?' + findUser);
+      // console.log('findUserResults is: ', findUserResults);
+      findUserResults.whenReady( (findUserResults) => {
+        let findUserResultsEntries = findUserResults.getEntries();
+        console.log('findUserResultsEntries', findUserResultsEntries);
+        //findUserResultsEntries[0]
+        client.record.getRecord('user/' + findUserResultsEntries[0]).whenReady(function(record){
+          client.record.snapshot(record.name, function(error, data) {
+            console.log('data of snapshot is: ', data);
+            bcrypt.compare(req.body.authData.password, data.password).then(function(results){
+              if (results) {
+                console.log('hits results is truthy')
+                console.log('are headers sent?', res.headersSent)
+                authenticate = true;
+                res.status(200).send({
+                  username: req.body.authData.username,
+                  clientData: { 
+                    userId: 'user/' + req.body.authData.username
+                  },
+                  serverData: { role: 'user' }
+                })
+                console.log('does anything happen now?')
+              } else {
+                res.status(403).send('Invalid credentials');
+              }
+            })
+          })
+        })
+        })
+      // findUserResults.delete();
+}
+
 function checkForValidLogin(user, res) {
   let recordToSearchFor = 'user/' + user.username
   console.log('are headers sent?', res.headersSent);

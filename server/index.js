@@ -27,6 +27,29 @@ app.post('/login', function (req, res) {
   console.log('req.body.authData.role is: ', req.body.authData.role);
   if (req.body.authData.role === 'user') {
     console.log('a user is trying to login');
+    let authenticate = false;
+    //req.body.authData.username'
+    return new Promise(function(resolve, reject){
+      console.log('promise function starts')
+      resolve();
+    }).then(function(results){
+      signUpOrLogIn.checkLogin(results, req, res)
+    })
+  } else if (req.body.authData.role === 'provider') {
+    console.log('a provider is trying to login');
+    return res.status(200).end();
+  } else {
+    console.log('invalid request')
+    return res.status(403).end();
+  }
+})
+/*
+app.post('/login', function (req, res) {
+  console.log('if I see this then a post request was made to login');
+  // console.log('req.body is: ', req.body);
+  console.log('req.body.authData.role is: ', req.body.authData.role);
+  if (req.body.authData.role === 'user') {
+    console.log('a user is trying to login');
     signUpOrLogIn.checkForValidLogin(req.body.authData, res);
     // return res.status(200).end();
   } else if (req.body.authData.role === 'provider') {
@@ -36,7 +59,7 @@ app.post('/login', function (req, res) {
     console.log('invalid request')
     return res.status(403).end();
   }
-})
+})*/
 
 app.post('/signup', function (req, res) {
   console.log('a post request happened');
