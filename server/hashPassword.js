@@ -32,6 +32,7 @@ function checkLogin(results, req, res){
       // console.log('findUserResults is: ', findUserResults);
       findUserResults.whenReady( (findUserResults) => {
         let findUserResultsEntries = findUserResults.getEntries();
+        findUserResults.delete();
         console.log('findUserResultsEntries', findUserResultsEntries);
         //findUserResultsEntries[0]
         client.record.getRecord('user/' + findUserResultsEntries[0]).whenReady(function(record){
@@ -57,7 +58,6 @@ function checkLogin(results, req, res){
           })
         })
         })
-      // findUserResults.delete();
 }
 
 function checkForValidLogin(user, res) {
