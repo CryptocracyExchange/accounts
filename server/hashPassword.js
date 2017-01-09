@@ -217,5 +217,6 @@ const hashPasswordSignUp = function(body, res) {
 
 module.exports = {
   hashPasswordSignUp: hashPasswordSignUp,
-  checkForValidLogin: checkForValidLogin
+  checkForValidLogin: checkForValidLogin,
+  checkLogin: checkLogin
 }
