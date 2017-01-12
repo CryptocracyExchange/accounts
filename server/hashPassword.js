@@ -98,8 +98,12 @@ const hashPasswordSignUp = function(body, res) {
             queryResults.whenReady(function(list) {
               let emailTaken = list.getEntries();
               if (emailTaken.length !== 0) {
-                return res.status(403).send('the email has already been used');
-              }  
+                list.delete();
+                res.status(403).send('the email has already been used');
+              } else {
+                list.delete();
+              }
+              return;  
             })
             const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
               user.set('username', body.username);
