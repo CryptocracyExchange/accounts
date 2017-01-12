@@ -34,7 +34,7 @@ function checkLogin(results, req, res){
         let findUserResultsEntries = findUserResults.getEntries();
         console.log('findUserResultsEntries', findUserResultsEntries);
         // findUserResultsEntries[0]
-        client.record.getRecord('user/' + 'b6').whenReady(function(record){
+        client.record.getRecord('user/' + findUserResultsEntries[0]).whenReady(function(record){
           client.record.snapshot(record.name, function(error, data) {
             console.log('data of snapshot is: ', data);
             console.log('req.body.authData.password is: ', req.body.authData.password, 'data.password is: ', data.password);
