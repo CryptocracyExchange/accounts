@@ -38,7 +38,7 @@ function checkLogin(results, req, res){
           client.record.snapshot(record.name, function(error, data) {
             console.log('data of snapshot is: ', data);
             console.log('req.body.authData.password is: ', req.body.authData.password, 'data.password is: ', data.password);
-            bcrypt.compare(req.body.authData.password, data.password, function(results){
+            bcrypt.compare(req.body.authData.password, data.password, function(error, results){
               findUserResults.delete();
               if (results) {
                 console.log('hits results is truthy')
