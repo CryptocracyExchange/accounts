@@ -82,10 +82,10 @@ const hashPasswordSignUp = function(body, res) {
             queryResults.whenReady(function(list) {
               let emailTaken = list.getEntries();
               if (emailTaken.length !== 0) {
-                list.discard();
+                // list.discard();
                 res.status(403).send('the email has already been used');
               } else {
-                list.discard();
+                // list.discard();
               }
               return;  
             })

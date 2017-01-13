@@ -3,8 +3,8 @@ let express = require('express');
 let app = express();
 let morgan = require('morgan');
 let bodyParser = require('body-parser');
-let signUpOrLogIn = require('./hashPassword.js');
-// console.log('hashPassword is: ', hashPassword);
+let signUpOrLogIn = require('./loginAndSignup.js');
+// console.log('loginAndSignup is: ', loginAndSignup);
 console.log('signUpOrLogIn is: ', signUpOrLogIn);
 
 app.use(morgan('combined'));
