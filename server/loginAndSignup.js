@@ -86,16 +86,16 @@ const hashPasswordSignUp = function(body, res) {
                 res.status(403).send('the email has already been used');
               } else {
                 // list.discard();
+                const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
+                user.set('username', body.username);
+                user.set('password', body.password);
+                user.set('email', body.email);
+                list.addEntry(checkThisRecordName);
+                console.log('new user has been created and added to the list');
+                return res.status(200).send('200 Ok!');
+            })
               }
               return;  
-            })
-            const user = client.record.getRecord('user/' + body.username).whenReady(function(user) {
-              user.set('username', body.username);
-              user.set('password', body.password);
-              user.set('email', body.email);
-              list.addEntry(checkThisRecordName);
-              console.log('new user has been created and added to the list');
-              return res.status(200).send('200 Ok!');
             })
         })
         }
