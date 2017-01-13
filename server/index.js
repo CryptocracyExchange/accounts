@@ -27,14 +27,12 @@ app.post('/login', function (req, res) {
   console.log('req.body.authData.role is: ', req.body.authData.role);
   if (req.body.authData.role === 'user') {
     console.log('a user is trying to login');
-    let authenticate = false;
     //req.body.authData.username'
-    return new Promise(function(resolve, reject){
+    /*return new Promise(function(resolve, reject){
       console.log('promise function starts')
       resolve();
-    }).then(function(results){
-      signUpOrLogIn.checkLogin(results, req, res)
-    })
+    }).then()*/
+      signUpOrLogIn.checkLogin(results, req, res);
   } else if (req.body.authData.role === 'provider') {
     console.log('a provider is trying to login');
     return res.status(200).end();
