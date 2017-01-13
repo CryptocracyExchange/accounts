@@ -21,7 +21,7 @@ console.log('will this run when the server starts up?');
 
 function checkLogin(results, req, res) {
   const theUsername = req.body.authData.username;
-  client.record.snapshot(`users/${theUsername}`, function(error, data) {
+  client.record.snapshot(`user/${theUsername}`, function(error, data) {
     if (error) {
       res.status(403).send('Invalid credentials');
     } else {
@@ -83,10 +83,10 @@ const hashPasswordSignUp = function(body, res) {
             queryResults.whenReady(function(list) {
               let emailTaken = list.getEntries();
               if (emailTaken.length !== 0) {
-                list.delete();
+                list.discard();
                 res.status(403).send('the email has already been used');
               } else {
-                list.delete();
+                list.discard();
               }
               return;  
             })
