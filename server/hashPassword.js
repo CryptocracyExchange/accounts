@@ -26,7 +26,6 @@ function checkLogin(results, req, res) {
       res.status(403).send('Invalid credentials');
     } else {
       bcrypt.compare(req.body.authData.password, data.password, function(error, results) {
-        findUserResults.discard();
         if (error) {
           res.status(403).send('Password not found')
         } else {
