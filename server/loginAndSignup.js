@@ -98,7 +98,6 @@ Provider.prototype.checkLogin = function (results, req, res) {
     }
   }, true);
 };
-console.log('randomly wouldnt let me add my code')
 Provider.prototype.signUp = function (body, res) {
   // check if user exists
   console.log('gets into signUp function');
