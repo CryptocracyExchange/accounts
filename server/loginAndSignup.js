@@ -46,6 +46,68 @@ function checkLogin(results, req, res) {
   }, true);
 }
 
+const signUp = (body, res) => {
+  // check if user exists
+  console.log('gets into signUp function');
+  const checkForDuplicateUser = new Promise((resolve, reject) => {
+    client.record.snapshot(`user/${body.username}`, (error, data) => {
+      console.log('user: error is', error, 'data is ', data);
+      if (error) {
+        console.log('hits error: ', error);
+        resolve();
+      }
+      if (data) {
+        console.log('user: hits data', data);
+        res.status(403).send('Username already taken');
+        reject();
+      }
+    });
+  });
+    // if yes return 403 Invalid Credentials
+  // check if email exists
+  const checkForDuplicateEmail = new Promise((resolve, reject) => {
+    client.record.snapshot(`email/${body.email}`, (error, data) => {
+      console.log('email: error is ', error, 'data is ', data);
+      if (error) {
+        console.log('hits error: ', error);
+        resolve();
+      }
+      if (data) {
+        console.log('email: hits data', data);
+        res.status(403).send('Email already taken');
+        reject();
+      }
+    });
+  });
+
+  Promise.all([checkForDuplicateUser, checkForDuplicateEmail]).then(() => {
+    console.log('New username and new email!');
+    bcrypt.genSalt(10, (error, salt) => {
+      console.log('salt is: ', salt);
+      bcrypt.hash(body.password, salt, null, (err, hashedPassword) => {
+        console.log('hashed password is: ', hashedPassword);
+        // body.password = hashedPassword;
+        client.record.getRecord(`user/${body.username}`).whenReady((newUserRecord) => {
+          newUserRecord.set('username', body.username);
+          newUserRecord.set('password', hashedPassword);
+          newUserRecord.set('email', body.email);
+        });
+        client.record.getRecord(`email/${body.email}`).whenReady((newEmailRecord) => {
+          newEmailRecord.set('email', body.email);
+          newEmailRecord.set('password', hashedPassword);
+        });
+      });
+    });
+  });
+    // if yes return 403 Invalid Credentials
+  // if neither exists
+    // generate salt
+    // hashPassword
+    // create user record with username, password, email
+    // create email record with email, password
+};
+
+/*
 const hashPasswordSignUp = function(body, res) {
   console.log('hits hashPasswordSignUp function');
   console.log('body.password is: ', body.password);
@@ -79,6 +141,7 @@ const hashPasswordSignUp = function(body, res) {
               ]
             })
             let queryResults = client.record.getList('search?' + findEmail);
+            queryResults.subscribe
             queryResults.whenReady(function(list) {
               let emailTaken = list.getEntries();
               if (emailTaken.length !== 0) {
@@ -103,8 +166,8 @@ const hashPasswordSignUp = function(body, res) {
     })
   });
 }
-
+*/
 module.exports = {
-  hashPasswordSignUp: hashPasswordSignUp,
-  checkLogin: checkLogin
-}
+  signUp,
+  checkLogin,
+};

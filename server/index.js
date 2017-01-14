@@ -39,7 +39,7 @@ app.post('/login', function (req, res) {
 app.post('/signup', function (req, res) {
   console.log('a post request happened');
   console.log('req body is: ', req.body);
-  signUpOrLogIn.hashPasswordSignUp(req.body, res);
+  signUpOrLogIn.signUp(req.body, res);
   // res.send('you hit the post request');
 });
 
