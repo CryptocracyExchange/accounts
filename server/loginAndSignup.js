@@ -24,7 +24,7 @@ function checkLogin(results, req, res) {
           res.status(200).send({
             clientData: {
               recordID: `user/${req.body.authData.username}`,
-              username: req.body.authData.username,
+              userID: req.body.authData.username,
             },
             serverData: { role: 'user' },
           });
