@@ -1,19 +1,82 @@
-const deepstream = require('deepstream.io-client-js');
-
-const deepstreamServer = process.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost';
-const auth = process.env.NODE_ENV === 'prod' ? {
-  role: process.env.DEEPSTREAM_AUTH_ROLE,
-  username: process.env.DEEPSTREAM_AUTH_USERNAME,
-  password: process.env.DEEPSTREAM_AUTH_PASSWORD } : {};
-const client = deepstream(`${deepstreamServer}:6020`).login(auth);
-
 const bcrypt = require('bcrypt-nodejs');
 
-console.log('will this run when the server starts up?');
+const DeepstreamClient = require('deepstream.io-client-js');
+const EventEmitter = require('events').EventEmitter;
+const util = require('util');
 
-function checkLogin(results, req, res) {
+const Provider = function (config) {
+  this.isReady = false;
+  this._config = config;
+  this._logLevel = config.logLevel !== undefined ? config.logLevel : 1;
+  this._deepstreamClient = null;
+};
+
+util.inherits(Provider, EventEmitter);
+
+Provider.prototype.start = function () {
+  this._initialiseDeepstreamClient();
+};
+
+Provider.prototype.stop = function () {
+  this._deepstreamClient.close();
+};
+
+Provider.prototype.log = function (message, level) {
+  if (this._logLevel < level) {
+    return;
+  }
+
+  const date = new Date();
+  const time = `${date.toLocaleTimeString()}:${date.getMilliseconds()}`;
+
+  console.log(`${time}>Accounts::${message}`);
+};
+
+Provider.prototype._initialiseDeepstreamClient = function () {
+  this.log('Initialising Deepstream connection', 1);
+
+  if (this._config.deepstreamClient) {
+    this._deepstreamClient = this._config.deepstreamClient;
+    this.log('Deepstream connection established', 1);
+    this._ready();
+  } else {
+    if (!this._config.deepstreamUrl) {
+      throw new Error('Can\'t connect to deepstream, neither deepstreamClient nor deepstreamUrl were provided', 1);
+    }
+
+    if (!this._config.deepstreamCredentials) {
+      throw new Error('Missing configuration parameter deepstreamCredentials', 1);
+    }
+
+    this._deepstreamClient = new DeepstreamClient(this._config.deepstreamUrl);
+    this._deepstreamClient.on('error', (error) => {
+      console.log(error);
+    });
+    this._deepstreamClient.login(
+      this._config.deepstreamCredentials,
+      this._onDeepstreamLogin.bind(this)
+      );
+  }
+};
+
+Provider.prototype._onDeepstreamLogin = function (success, error, message) {
+  if (success) {
+    this.log('Connection to deepstream established', 1);
+    this._ready();
+  } else {
+    this.log(`Can't connect to deepstream: ${message}`, 1);
+  }
+};
+
+Provider.prototype._ready = function () {
+  this.log('Provider ready', 1);
+  this.isReady = true;
+  this.emit('ready');
+};
+
+Provider.prototype.checkLogin = function (results, req, res) {
   const theUsername = req.body.authData.username;
-  client.record.snapshot(`user/${theUsername}`, (error, data) => {
+  this._deepstreamClient.record.snapshot(`user/${theUsername}`, (error, data) => {
     if (error) {
       res.status(403).send('Invalid credentials');
     } else {
@@ -34,13 +97,13 @@ function checkLogin(results, req, res) {
       });
     }
   }, true);
-}
+};
 
-const signUp = (body, res) => {
+Provider.prototype.signUp = function (body, res) {
   // check if user exists
   console.log('gets into signUp function');
   const checkForDuplicateUser = new Promise((resolve, reject) => {
-    client.record.snapshot(`user/${body.username}`, (error, data) => {
+    this._deepstreamClient.record.snapshot(`user/${body.username}`, (error, data) => {
       console.log('user: error is', error, 'data is ', data);
       if (error) {
         console.log('hits error: ', error);
@@ -56,7 +119,7 @@ const signUp = (body, res) => {
     // if yes return 403 Invalid Credentials
   // check if email exists
   const checkForDuplicateEmail = new Promise((resolve, reject) => {
-    client.record.snapshot(`email/${body.email}`, (error, data) => {
+    this._deepstreamClient.record.snapshot(`email/${body.email}`, (error, data) => {
       console.log('email: error is ', error, 'data is ', data);
       if (error) {
         console.log('hits error: ', error);
@@ -77,26 +140,28 @@ const signUp = (body, res) => {
       bcrypt.hash(body.password, salt, null, (err, hashedPassword) => {
         console.log('hashed password is: ', hashedPassword);
         // body.password = hashedPassword;
-        client.record.getRecord(`user/${body.username}`).whenReady((newUserRecord) => {
+        this._deepstreamClient.record.getRecord(`user/${body.username}`).whenReady((newUserRecord) => {
           newUserRecord.set('username', body.username);
           newUserRecord.set('password', hashedPassword);
           newUserRecord.set('email', body.email);
         });
-        client.record.getRecord(`email/${body.email}`).whenReady((newEmailRecord) => {
+        this._deepstreamClient.record.getRecord(`email/${body.email}`).whenReady((newEmailRecord) => {
           newEmailRecord.set('email', body.email);
           newEmailRecord.set('password', hashedPassword);
         });
       });
     });
   });
-    // if yes return 403 Invalid Credentials
-  // if neither exists
-    // generate salt
-    // hashPassword
-    // create user record with username, password, email
-    // create email record with email, password
 };
 
+module.exports = Provider;
+
+  // if yes return 403 Invalid Credentials
+// if neither exists
+  // generate salt
+  // hashPassword
+  // create user record with username, password, email
+  // create email record with email, password
 /*
 const hashPasswordSignUp = function(body, res) {
   console.log('hits hashPasswordSignUp function');
@@ -157,7 +222,3 @@ const hashPasswordSignUp = function(body, res) {
   });
 }
 */
-module.exports = {
-  signUp,
-  checkLogin,
-};
