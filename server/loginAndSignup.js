@@ -1,11 +1,3 @@
-/*
-            let emailExists = emailRegExp.test(allUsersArr[i]);
-            if (emailExists) {
-              console.log('the email has already been used!')
-              return res.status(403).send('the email has already been used');
-            }
-            */  
-
 const deepstream = require('deepstream.io-client-js');
 
 const deepstreamServer = process.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost';
@@ -21,25 +13,23 @@ console.log('will this run when the server starts up?');
 
 function checkLogin(results, req, res) {
   const theUsername = req.body.authData.username;
-  client.record.snapshot(`user/${theUsername}`, function(error, data) {
+  client.record.snapshot(`user/${theUsername}`, (error, data) => {
     if (error) {
       res.status(403).send('Invalid credentials');
     } else {
-      bcrypt.compare(req.body.authData.password, data.password, function(error, results) {
+      bcrypt.compare(req.body.authData.password, data.password, (err, correctPassword) => {
         if (error) {
-          res.status(403).send('Password not found')
-        } else {
-          if (results) {
-            res.status(200).send({
-              clientData: {
-              recordID: 'user/' + req.body.authData.username,
-              username: req.body.authData.username
+          res.status(403).send('Password not found');
+        } else if (correctPassword) {
+          res.status(200).send({
+            clientData: {
+              recordID: `user/${req.body.authData.username}`,
+              username: req.body.authData.username,
             },
-              serverData: { role: 'user' }
-            })
-          } else {
-            res.status(403).send('Invalid credentials');
-          }
+            serverData: { role: 'user' },
+          });
+        } else {
+          res.status(403).send('Invalid credentials');
         }
       });
     }
