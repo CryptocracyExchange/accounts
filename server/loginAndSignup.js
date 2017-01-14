@@ -29,7 +29,7 @@ Provider.prototype.log = function (message, level) {
   const date = new Date();
   const time = `${date.toLocaleTimeString()}:${date.getMilliseconds()}`;
 
-  console.log(`${time}>Accounts::${message}`);
+  console.log(`${time}::Accounts::${message}`);
 };
 
 Provider.prototype._initialiseDeepstreamClient = function () {
