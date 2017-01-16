@@ -114,6 +114,8 @@ Provider.prototype.signUp = function (body, res) {
         reject();
       }
     });
+  }).catch((results) => {
+    console.log('checkForDuplicateUser is: ', results);
   });
     // if yes return 403 Invalid Credentials
   // check if email exists
@@ -130,6 +132,8 @@ Provider.prototype.signUp = function (body, res) {
         reject();
       }
     });
+  }).catch((results) => {
+    console.log('checkForDuplicateEmail results is: ', results);
   });
 
   Promise.all([checkForDuplicateUser, checkForDuplicateEmail]).then(() => {
@@ -150,6 +154,8 @@ Provider.prototype.signUp = function (body, res) {
         });
       });
     });
+  }).catch((results) => {
+    console.log('Promise.all results is: ', results);
   });
 };
 
