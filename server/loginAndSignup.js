@@ -110,13 +110,15 @@ Provider.prototype.signUp = function (body, res) {
       }
       if (data) {
         console.log('user: hits data', data);
-        res.status(403).send('Username already taken');
-        reject();
+        // res.status(403).send('Username already taken');
+        reject('username');
       }
     });
-  }).catch((results) => {
+  })
+  /*.catch((results) => {
     console.log('checkForDuplicateUser is: ', results);
   });
+  */
     // if yes return 403 Invalid Credentials
   // check if email exists
   const checkForDuplicateEmail = new Promise((resolve, reject) => {
@@ -128,14 +130,16 @@ Provider.prototype.signUp = function (body, res) {
       }
       if (data) {
         console.log('email: hits data', data);
-        res.status(403).send('Email already taken');
-        reject();
+        // res.status(403).send('Email already taken');
+        reject('email');
       }
     });
-  }).catch((results) => {
+  })
+/*
+  .catch((results) => {
     console.log('checkForDuplicateEmail results is: ', results);
   });
-
+*/
   Promise.all([checkForDuplicateUser, checkForDuplicateEmail]).then(() => {
     console.log('New username and new email!');
     bcrypt.genSalt(10, (error, salt) => {
@@ -154,8 +158,9 @@ Provider.prototype.signUp = function (body, res) {
         });
       });
     });
-  }).catch((results) => {
-    console.log('Promise.all results is: ', results);
+  }).catch((reason) => {
+    console.log('Promise.all rejection reason is: ', reason);
+    res.status(403).send(`${reason} is already taken`);
   });
 };
 
