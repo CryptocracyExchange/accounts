@@ -40,7 +40,7 @@ app.use(bodyParser.json());
 app.use(express.static('client'));
 
 const jwtSecret = 'th3$3rEtc0dE!';
-app.set('theSecretCode, jwtSecret')
+app.set('theSecretCode', jwtSecret);
 
 app.get('/login', function (req,res) {
   res.sendFile(path.join(__dirname, '../client/login.html'));
@@ -51,7 +51,7 @@ app.post('/login', function (req, res) {
   console.log('req.body.authData.role is: ', req.body.authData.role);
   if (req.body.authData.role === 'user') {
     console.log('a user is trying to login');
-    accounts.checkLogin(req.body.authData, req, res);
+    accounts.checkLogin(req.body.authData, req, res, app);
   } else if (req.body.authData.role === 'provider') {
     console.log('a provider is trying to login');
     return res.status(200).end();

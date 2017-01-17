@@ -74,7 +74,7 @@ Provider.prototype._ready = function () {
   this.emit('ready');
 };
 
-Provider.prototype.checkLogin = function (results, req, res) {
+Provider.prototype.checkLogin = function (results, req, res, app) {
   const theUsername = req.body.authData.username;
   this._deepstreamClient.record.snapshot(`user/${theUsername}`, (error, data) => {
     if (error) {
@@ -84,12 +84,15 @@ Provider.prototype.checkLogin = function (results, req, res) {
         if (error) {
           res.status(403).send('Password not found');
         } else if (correctPassword) {
-          res.status(200).send({
-            clientData: {
-              recordID: `user/${req.body.authData.username}`,
-              userID: req.body.authData.username,
-            },
-            serverData: { role: 'user' },
+          jwt.sign(req.body.authData.username, app.get('theSecretCode'), { expiresIn: '30d' }, (token) => {
+            res.status(200).send({
+              clientData: {
+                recordID: `user/${req.body.authData.username}`,
+                userID: req.body.authData.username,
+                token,
+              },
+              serverData: { role: 'user' },
+            });
           });
         } else {
           res.status(403).send('Invalid credentials');
