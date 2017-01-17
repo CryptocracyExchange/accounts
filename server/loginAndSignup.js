@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt-nodejs');
-
+const jwt = require('jsonwebtoken');
 const DeepstreamClient = require('deepstream.io-client-js');
 const EventEmitter = require('events').EventEmitter;
 const util = require('util');
@@ -155,6 +155,7 @@ Provider.prototype.signUp = function (body, res) {
         this._deepstreamClient.record.getRecord(`email/${body.email}`).whenReady((newEmailRecord) => {
           newEmailRecord.set('email', body.email);
           newEmailRecord.set('password', hashedPassword);
+          res.status(200).send('new user has been created');
         });
       });
     });

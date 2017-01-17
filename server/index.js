@@ -1,7 +1,9 @@
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 const bodyParser = require('body-parser');
+const expressJwt = require('express-jwt');
 const AccountsProvider = require('./loginAndSignup.js');
 
 const accounts = new AccountsProvider({
@@ -18,20 +20,27 @@ const accounts = new AccountsProvider({
     role: process.env.DEEPSTREAM_AUTH_ROLE,
     username: process.env.DEEPSTREAM_AUTH_USERNAME,
     password: process.env.DEEPSTREAM_AUTH_PASSWORD
-  } : {}
+  } : {
+    role: 'provider',
+    username: 'accounts-service',
+    password: '12345'
+  }
 });
 
 accounts.start();
 
 const app = express();
 app.use(morgan('combined'));
-
+app.use(cors({ origin: '*' }));
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(bodyParser.json());
 
 app.use(express.static('client'));
+
+const jwtSecret = 'th3$3rEtc0dE!';
+app.set('theSecretCode, jwtSecret')
 
 app.get('/login', function (req,res) {
   res.sendFile(path.join(__dirname, '../client/login.html'));
