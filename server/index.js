@@ -40,7 +40,7 @@ app.use(bodyParser.json());
 app.use(express.static('client'));
 
 // [TODO] Set this by an env var.
-const jwtSecret = 'th3$3rEtc0dE!';
+const jwtSecret = process.env.JWT_SECRET || 'th3$3rEtc0dE!';
 app.set('theSecretCode', jwtSecret);
 
 app.get('/login', function (req,res) {
