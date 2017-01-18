@@ -75,6 +75,7 @@ Provider.prototype._ready = function () {
 };
 
 Provider.prototype.checkLogin = function (results, req, res, app) {
+  // console.log('app.get(theSecretCode) is: ', app.get('theSecretCode'));
   const theUsername = req.body.authData.username;
   this._deepstreamClient.record.snapshot(`user/${theUsername}`, (error, data) => {
     if (error) {
@@ -84,7 +85,9 @@ Provider.prototype.checkLogin = function (results, req, res, app) {
         if (error) {
           res.status(403).send('Password not found');
         } else if (correctPassword) {
-          jwt.sign(req.body.authData.username, app.get('theSecretCode'), { expiresIn: '30d' }, (token) => {
+          jwt.sign(req.body.authData, app.get('theSecretCode'), { expiresIn: '7d' }, (err, token) => {
+            console.log('token is: ', token);
+            //make jwt record here!!!
             res.status(200).send({
               clientData: {
                 recordID: `user/${req.body.authData.username}`,
