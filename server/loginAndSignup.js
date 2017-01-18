@@ -5,6 +5,7 @@ const EventEmitter = require('events').EventEmitter;
 const util = require('util');
 
 const Provider = function (config) {
+  this._jwtSecret = config.jwtSecret;
   this.isReady = false;
   this._config = config;
   this._logLevel = config.logLevel !== undefined ? config.logLevel : 1;
@@ -75,49 +76,52 @@ Provider.prototype._ready = function () {
 };
 
 Provider.prototype.checkJWT = function (token, res) {
-  this._deepstreamClient.record.snapshot(`jwt/${token}`, (err, data) => {
-    if (err) {
-      this.log('Invalid JWT token');
-      res.status(403).send();
-    } else {
-      this.log('Valid JWT token');
-      res.status(200).send({
-        clientData: data,
-        serverData: { role: 'user' }
+  jwt.verify(token, this._jwtSecret, (err, decoded) => {
+    this._deepstreamClient.record.snapshot(`user/${decoded.username}`, (err, data) => {
+      bcrypt.compare(decoded.password, data.password, (err, correctPassword) => {
+        if (err) {
+          this.log('Failed to compare hashed password');
+        } else if (correctPassword) {
+          this.log('Valid JWT token');
+          res.status(200).send({
+            clientData: data,
+            serverData: { role: 'user' }
+          });
+        }
       });
-    }
+    });
   });
 };
 
-Provider.prototype.checkLogin = function (results, req, res, app) {
+Provider.prototype.checkLogin = function (results, req, res) {
   const theUsername = req.body.authData.username;
   this._deepstreamClient.record.snapshot(`user/${theUsername}`, (error, data) => {
     if (error) {
       res.status(403).send('Invalid credentials');
     } else {
       bcrypt.compare(req.body.authData.password, data.password, (err, correctPassword) => {
-        if (error) {
+        if (err) {
           res.status(403).send('Password not found');
         } else if (correctPassword) {
-          jwt.sign(req.body.authData, app.get('theSecretCode'), { expiresIn: '7d' }, (err, token) => {
-            // [TODO] Make jwt record here.
+          jwt.sign(req.body.authData, this._jwtSecret, { expiresIn: '7d' }, (err, token) => {
             this._deepstreamClient.record
-                .getRecord(`jwt/${token}`)
-                .whenReady((jwtRecord) => {
-                  jwtRecord.set({
-                    token,
-                    userID: req.body.authData.username,
-                    email: req.body.authData.email
+                .getRecord(`user/${theUsername}`)
+                .whenReady((userRecord) => {
+                  userRecord.set('token', token, (err) => {
+                    if (err) {
+                      this.log(`Error while setting token for ${theUsername}`)
+                    } else {
+                      res.status(200).send({
+                        clientData: {
+                          recordID: `user/${req.body.authData.username}`,
+                          userID: req.body.authData.username,
+                          token,
+                        },
+                        serverData: { role: 'user' },
+                      });
+                    }
                   });
                 });
-            res.status(200).send({
-              clientData: {
-                recordID: `user/${req.body.authData.username}`,
-                userID: req.body.authData.username,
-                token,
-              },
-              serverData: { role: 'user' },
-            });
           });
         } else {
           res.status(403).send('Invalid credentials');
@@ -126,6 +130,7 @@ Provider.prototype.checkLogin = function (results, req, res, app) {
     }
   }, true);
 };
+
 Provider.prototype.signUp = function (body, res) {
   // check if user exists
   console.log('gets into signUp function');

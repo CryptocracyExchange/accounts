@@ -3,9 +3,9 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const expressJwt = require('express-jwt');
 const AccountsProvider = require('./loginAndSignup.js');
 
+const jwtSecret = process.env.JWT_SECRET || 'th3$3rEtc0dE!';
 const accounts = new AccountsProvider({
   /**
    * Only use 1 for production!
@@ -14,6 +14,7 @@ const accounts = new AccountsProvider({
    * 2 = also log subscriptions and discards
    * 3 = log outgoing messages
    */
+  jwtSecret,
   logLevel: process.env.NODE_ENV === 'prod' ? 1 : 3,
   deepstreamUrl: `${process.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost'}:6020`,
   deepstreamCredentials: process.env.NODE_ENV === 'prod' ? {
@@ -30,6 +31,7 @@ const accounts = new AccountsProvider({
 accounts.start();
 
 const app = express();
+app.set('theSecretCode', jwtSecret);
 app.use(morgan('combined'));
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.urlencoded({
@@ -38,10 +40,6 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 app.use(express.static('client'));
-
-// [TODO] Set this by an env var.
-const jwtSecret = process.env.JWT_SECRET || 'th3$3rEtc0dE!';
-app.set('theSecretCode', jwtSecret);
 
 app.get('/login', function (req,res) {
   res.sendFile(path.join(__dirname, '../client/login.html'));
@@ -54,7 +52,7 @@ app.post('/login', function (req, res) {
       // [TODO] Implement jwt check provider method
       accounts.checkJWT(req.body.authData.jwt, res);
     } else {
-      accounts.checkLogin(req.body.authData, req, res, app);
+      accounts.checkLogin(req.body.authData, req, res);
     }
   } else if (req.body.authData.role === 'provider') {
     return res.status(200).send();
