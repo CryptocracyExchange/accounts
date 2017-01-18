@@ -52,6 +52,7 @@ app.post('/login', function (req, res) {
   if (req.body.authData.role === 'user') {
     if (req.body.authData.jwt) {
       // [TODO] Implement jwt check provider method
+      accounts.checkJWT(req.body.authData.jwt, res);
     } else {
       accounts.checkLogin(req.body.authData, req, res, app);
     }

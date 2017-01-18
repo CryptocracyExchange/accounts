@@ -74,6 +74,21 @@ Provider.prototype._ready = function () {
   this.emit('ready');
 };
 
+Provider.prototype.checkJWT = function (token, res) {
+  this._deepstreamClient.record.snapshot(`jwt/${token}`, (err, data) => {
+    if (err) {
+      this.log('Invalid JWT token');
+      res.status(403).send();
+    } else {
+      this.log('Valid JWT token');
+      res.status(200).send({
+        clientData: data,
+        serverData: { role: 'user' }
+      });
+    }
+  });
+};
+
 Provider.prototype.checkLogin = function (results, req, res, app) {
   const theUsername = req.body.authData.username;
   this._deepstreamClient.record.snapshot(`user/${theUsername}`, (error, data) => {
