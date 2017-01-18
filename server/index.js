@@ -55,7 +55,13 @@ app.post('/login', function (req, res) {
       accounts.checkLogin(req.body.authData, req, res);
     }
   } else if (req.body.authData.role === 'provider') {
-    return res.status(200).send();
+    return res.status(200).send({
+      clientData: {},
+      serverData: {
+        role: req.body.authData.role,
+        userID: req.body.authData.username
+      },
+    });
   } else {
     accounts.log('Invalid login request');
     return res.status(403).send();

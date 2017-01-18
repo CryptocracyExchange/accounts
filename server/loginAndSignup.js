@@ -109,7 +109,7 @@ Provider.prototype.checkLogin = function (results, req, res) {
                 .whenReady((userRecord) => {
                   userRecord.set('token', token, (err) => {
                     if (err) {
-                      this.log(`Error while setting token for ${theUsername}`)
+                      this.log(`Error while setting token for ${theUsername}`);
                     } else {
                       res.status(200).send({
                         clientData: {
@@ -117,7 +117,10 @@ Provider.prototype.checkLogin = function (results, req, res) {
                           userID: req.body.authData.username,
                           token,
                         },
-                        serverData: { role: 'user' },
+                        serverData: {
+                          role: 'user',
+                          userID: req.body.authData.username
+                        },
                       });
                     }
                   });
