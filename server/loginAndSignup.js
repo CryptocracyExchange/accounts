@@ -78,6 +78,9 @@ Provider.prototype._ready = function () {
 Provider.prototype.checkJWT = function (token, res) {
   jwt.verify(token, this._jwtSecret, (err, decoded) => {
     this._deepstreamClient.record.snapshot(`user/${decoded.username}`, (err, data) => {
+      if (err) {
+        this.log('Failed to find user in users table');
+      }
       bcrypt.compare(decoded.password, data.password, (err, correctPassword) => {
         if (err) {
           this.log('Failed to compare hashed password');
