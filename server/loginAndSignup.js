@@ -77,22 +77,26 @@ Provider.prototype._ready = function () {
 
 Provider.prototype.checkJWT = function (token, res) {
   jwt.verify(token, this._jwtSecret, (err, decoded) => {
-    this._deepstreamClient.record.snapshot(`user/${decoded.username}`, (err, data) => {
-      if (err) {
-        this.log('Failed to find user in users table');
-      }
-      bcrypt.compare(decoded.password, data.password, (err, correctPassword) => {
-        if (err) {
-          this.log('Failed to compare hashed password');
-        } else if (correctPassword) {
-          this.log('Valid JWT token');
-          res.status(200).send({
-            clientData: data,
-            serverData: { role: 'user' }
-          });
+    if (decoded) {
+      this._deepstreamClient.record.snapshot(`user/${decoded.username}`, (anErr, data) => {
+        if (anErr) {
+          this.log('Failed to find user in users table');
         }
+        bcrypt.compare(decoded.password, data.password, (theErr, correctPassword) => {
+          if (theErr) {
+            this.log('Failed to compare hashed password');
+          } else if (correctPassword) {
+            this.log('Valid JWT token');
+            res.status(200).send({
+              clientData: data,
+              serverData: { role: 'user' }
+            });
+          }
+        });
       });
-    });
+    } else {
+      res.status(403).send();
+    }
   });
 };
 
