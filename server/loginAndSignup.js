@@ -153,7 +153,10 @@ Provider.prototype.signUp = function (body, res) {
         resolve();
       }
       if (data) {
-        reject(`${body.username} already exists`);
+        reject({
+          reason: `${body.username} already exists`,
+          type: 'username'
+        });
       }
     });
   });
@@ -164,7 +167,10 @@ Provider.prototype.signUp = function (body, res) {
         resolve();
       }
       if (data) {
-        reject(`${body.email} already exists`);
+        reject({
+          reason: `${body.email} already exists`,
+          type: 'email'
+        });
       }
     });
   });
@@ -187,7 +193,7 @@ Provider.prototype.signUp = function (body, res) {
     });
   }).catch((reason) => {
     this.log(`New account - Promise rejection: ${reason}`);
-    res.status(403).send(`${reason} is already taken`);
+    res.status(403).send(`${reason.type} is already taken`);
   });
 };
 
