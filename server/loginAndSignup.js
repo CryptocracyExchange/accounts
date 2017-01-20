@@ -108,7 +108,7 @@ Provider.prototype.checkJWT = function (token, res) {
 Provider.prototype.checkLogin = function (results, req, res) {
   const theUsername = req.body.authData.username;
   this._deepstreamClient.record.snapshot(`user/${theUsername}`, (error, data) => {
-    if (error || data.password === undefined) {
+    if (error || data.password === undefined) { //making sure this change is reflected in push
       res.status(403).send('Invalid credentials');
     } else {
       bcrypt.compare(req.body.authData.password, data.password, (err, correctPassword) => {
