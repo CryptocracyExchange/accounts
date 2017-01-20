@@ -80,24 +80,26 @@ Provider.prototype.checkJWT = function (token, res) {
     if (decoded) {
       this._deepstreamClient.record.snapshot(`user/${decoded.username}`, (anErr, data) => {
         console.log('data is: ', data);
-        if (anErr) {
+        if (anErr || data.password === undefined) {
           this.log('Failed to find user in users table');
+          res.status(403).send();
+        } else {
+          bcrypt.compare(decoded.password, data.password, (theErr, correctPassword) => {
+            if (theErr) {
+              this.log('Failed to compare hashed password');
+            } else if (correctPassword) {
+              this.log('Valid JWT token');
+              res.status(200).send({
+                clientData: {
+                  recordID: `user/${decoded.username}`,
+                  userID: data.username,
+                  token: data.token
+                },
+                serverData: { role: 'user' }
+              });
+            }
+          });
         }
-        bcrypt.compare(decoded.password, data.password, (theErr, correctPassword) => {
-          if (theErr) {
-            this.log('Failed to compare hashed password');
-          } else if (correctPassword) {
-            this.log('Valid JWT token');
-            res.status(200).send({
-              clientData: {
-                recordID: `user/${decoded.username}`,
-                userID: data.username,
-                token: data.token
-              },
-              serverData: { role: 'user' }
-            });
-          }
-        });
       });
     } else {
       res.status(403).send();
